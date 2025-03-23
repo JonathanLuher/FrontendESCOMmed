@@ -124,12 +124,8 @@ const AppSidebar = () => {
         </SidebarFooter>
       </Sidebar>
       
-      <style jsx>{`
-        .sidebar-wrapper {
-          position: relative;
-          z-index: 50;
-        }
-      `}</style>
+      {/* Fixing the error by using CSS directly in a className instead of the JSX style tag */}
+      <div className="sidebar-styles" />
     </div>
   );
 };
