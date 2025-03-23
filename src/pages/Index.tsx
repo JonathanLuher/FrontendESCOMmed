@@ -1,8 +1,7 @@
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
 import { 
@@ -12,6 +11,7 @@ import {
   CarouselNext,
   CarouselPrevious
 } from '@/components/ui/carousel';
+import Autoplay from 'embla-carousel-autoplay';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -36,30 +36,56 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-white">
+    <>
       <Navbar />
       
-      <main className="flex-grow container mx-auto px-4 py-12 flex flex-col items-center justify-center">
-        {/* Carrusel de imágenes */}
+      <main className="container mx-auto px-4 py-12 flex flex-col items-center justify-center">
+        {/* Carrusel de imágenes mejorado */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="w-full max-w-5xl mb-16"
         >
-          <Carousel className="w-full" opts={{ loop: true }}>
+          <Carousel 
+            className="w-full" 
+            opts={{ loop: true }} 
+            plugins={[
+              Autoplay({
+                delay: 5000,
+                stopOnInteraction: true,
+              }),
+            ]}
+          >
             <CarouselContent>
               {carouselImages.map((image, index) => (
                 <CarouselItem key={index}>
-                  <div className="relative rounded-xl overflow-hidden aspect-[16/9]">
-                    <img 
-                      src={image.src} 
-                      alt={image.alt} 
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
-                      <h3 className="text-white text-2xl font-bold p-6">{image.title}</h3>
-                    </div>
+                  <div className="overflow-hidden rounded-xl">
+                    <motion.div 
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="relative aspect-[16/9]"
+                    >
+                      <AnimatePresence mode="wait">
+                        <motion.img 
+                          initial={{ opacity: 0, scale: 1.1 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.9 }}
+                          transition={{ duration: 0.5 }}
+                          src={image.src} 
+                          alt={image.alt} 
+                          className="w-full h-full object-cover rounded-xl shadow-lg"
+                        />
+                      </AnimatePresence>
+                      <motion.div 
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2, duration: 0.5 }}
+                        className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end"
+                      >
+                        <h3 className="text-white text-2xl font-bold p-6">{image.title}</h3>
+                      </motion.div>
+                    </motion.div>
                   </div>
                 </CarouselItem>
               ))}
@@ -150,7 +176,7 @@ const Index = () => {
       </main>
       
       <Footer />
-    </div>
+    </>
   );
 };
 
