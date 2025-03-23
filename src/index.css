@@ -36,6 +36,11 @@
     --ring: 221.2 83% 53.3%;
 
     --radius: 0.75rem;
+
+    /* Sidebar-specific variables */
+    --sidebar-width: 16rem;
+    --sidebar-width-collapsed: 3rem;
+    --sidebar-transition-duration: 0.4s;
   }
 
   .dark {
@@ -105,5 +110,18 @@
   
   .glass-card {
     @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-lg;
+  }
+
+  /* Custom sidebar styles */
+  [data-sidebar="sidebar"] {
+    transition: width var(--sidebar-transition-duration) ease;
+  }
+
+  [data-collapsible="icon"] {
+    width: var(--sidebar-width-collapsed);
+  }
+
+  .sidebar-wrapper:hover [data-collapsible="icon"] {
+    width: var(--sidebar-width);
   }
 }
