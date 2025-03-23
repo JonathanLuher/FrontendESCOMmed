@@ -1,9 +1,8 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Footer from '@/components/Footer';
-import Navbar from '@/components/Navbar';
 import { 
   Carousel,
   CarouselContent,
@@ -37,8 +36,6 @@ const Index = () => {
 
   return (
     <>
-      <Navbar />
-      
       <main className="container mx-auto px-4 py-12 flex flex-col items-center justify-center">
         {/* Carrusel de imágenes mejorado */}
         <motion.div

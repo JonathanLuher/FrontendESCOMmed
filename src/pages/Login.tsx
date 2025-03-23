@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { motion } from 'framer-motion';
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 const Login = () => {
@@ -39,7 +38,6 @@ const Login = () => {
   
   return (
     <>
-      <Navbar />
       <div className="flex flex-col items-center justify-center p-4 min-h-[80vh]">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
