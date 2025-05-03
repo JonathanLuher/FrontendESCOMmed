@@ -21,7 +21,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://144.126.132.105:8080/api/auth/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
