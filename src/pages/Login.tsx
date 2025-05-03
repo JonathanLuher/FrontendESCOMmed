@@ -8,42 +8,75 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { motion } from 'framer-motion';
 import Footer from '@/components/Footer';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const checkEmailResponse = await fetch(`http://144.126.132.105:8080/paciente/email/${encodeURIComponent(email)}`);
+      const response = await fetch('http://144.126.132.105:8080/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password
+        }),
+      });
 
-      if (!checkEmailResponse.ok) {
-        if (checkEmailResponse.status === 404) {
-          toast.error('Credenciales incorrectas, intente de nuevo');
+      if (!response.ok) {
+        if (response.status === 401) {
+          toast.error('Error en correo y/o contraseña');
         } else {
-          throw new Error(`HTTP error! status: ${checkEmailResponse.status}`);
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
         return;
       }
 
-      const paciente = await checkEmailResponse.json();
+      const data = await response.json();
 
-      if (paciente && paciente.id.toString() === password) {
+      // data[0] = tipo de usuario
+      // data[1] = estado de autenticación
+
+      if (data[1] === 2) {
         toast.success('¡Login exitoso!');
+        // Guardar el tipo de usuario en localStorage
+        localStorage.setItem('userType', data[0].toString());
+        localStorage.setItem('userEmail', email);
+
+        // Redirigir según el tipo de usuario
+        switch(data[0]) {
+          case 1: // Médico
+            navigate('/doctor-dashboard');
+            break;
+          case 2: // Paciente
+            navigate('/patient');
+            break;
+          case 3: // Investigador
+            navigate('/researcher-dashboard');
+            break;
+          default:
+            navigate('/');
+        }
       } else {
-        toast.error('Credenciales incorrectas, intente de nuevo');
+        toast.error('Error en correo y/o contraseña');
       }
 
-
-      setEmail('');
-      setPassword('');
     } catch (error) {
       console.error('Error al hacer la petición:', error);
-      toast.error('Error al conectarse con la API. Intente de nuevo más tarde.');
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        toast.error('Error al conectarse al servidor. Intente de nuevo más tarde.');
+      } else {
+        toast.error('Ocurrió un error inesperado. Intente de nuevo.');
+      }
     } finally {
       setLoading(false);
     }
@@ -94,7 +127,7 @@ const Login = () => {
 
                     <div>
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="password">Contraseña (ID del paciente)</Label>
+                        <Label htmlFor="password">Contraseña</Label>
                         <a
                             href="/forgot-password"
                             className="text-sm text-primary hover:underline"
