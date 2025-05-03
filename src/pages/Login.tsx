@@ -21,6 +21,7 @@ const Login = () => {
     setLoading(true);
 
     try {
+      // Usamos ruta relativa que será redirigida por el proxy de Vercel
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -42,16 +43,16 @@ const Login = () => {
       }
 
       const data = await response.json();
-
+      
       // data[0] = tipo de usuario
       // data[1] = estado de autenticación
-
+      
       if (data[1] === 2) {
         toast.success('¡Login exitoso!');
-        // Guardar el tipo de usuario en localStorage
+        // Guardar datos de usuario
         localStorage.setItem('userType', data[0].toString());
         localStorage.setItem('userEmail', email);
-
+        
         // Redirigir según el tipo de usuario
         switch(data[0]) {
           case 1: // Médico
@@ -72,10 +73,14 @@ const Login = () => {
 
     } catch (error) {
       console.error('Error al hacer la petición:', error);
-      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-        toast.error('Error al conectarse al servidor. Intente de nuevo más tarde.');
+      if (error instanceof TypeError) {
+        if (error.message.includes('Failed to fetch')) {
+          toast.error('Error al conectarse al servidor. Intente de nuevo más tarde.');
+        } else {
+          toast.error('Ocurrió un error inesperado. Intente de nuevo.');
+        }
       } else {
-        toast.error('Ocurrió un error inesperado. Intente de nuevo.');
+        toast.error('Error en el proceso de autenticación');
       }
     } finally {
       setLoading(false);
@@ -83,100 +88,102 @@ const Login = () => {
   };
 
   return (
-      <>
-        <div className="flex flex-col items-center justify-center p-4 min-h-[80vh]">
-          <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="w-full max-w-md"
-          >
-            <Card className="glass-card overflow-hidden">
-              <CardHeader className="space-y-1 text-center">
-                <div className="flex justify-center mb-4">
-                  <motion.div
-                      initial={{ opacity: 0, y: -20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, ease: "easeOut" }}
-                  >
-                    <div className="w-28 h-28 rounded-full bg-primary/5 flex items-center justify-center mb-2">
-                      <span className="text-3xl font-bold text-primary">ESCOMed</span>
-                    </div>
-                  </motion.div>
-                </div>
-                <CardTitle className="text-2xl font-bold">Iniciar sesión</CardTitle>
-                <CardDescription>
-                  Ingresa tus credenciales para acceder
-                </CardDescription>
-              </CardHeader>
+    <>
+      <div className="flex flex-col items-center justify-center p-4 min-h-[80vh]">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="w-full max-w-md"
+        >
+          <Card className="glass-card overflow-hidden">
+            <CardHeader className="space-y-1 text-center">
+              <div className="flex justify-center mb-4">
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                >
+                  <div className="w-28 h-28 rounded-full bg-primary/5 flex items-center justify-center mb-2">
+                    <span className="text-3xl font-bold text-primary">ESCOMed</span>
+                  </div>
+                </motion.div>
+              </div>
+              <CardTitle className="text-2xl font-bold">Iniciar sesión</CardTitle>
+              <CardDescription>
+                Ingresa tus credenciales para acceder
+              </CardDescription>
+            </CardHeader>
 
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="email">Correo Electrónico</Label>
-                      <Input
-                          id="email"
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="mt-1"
-                          required
-                      />
-                    </div>
-
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="password">Contraseña</Label>
-                        <a
-                            href="/forgot-password"
-                            className="text-sm text-primary hover:underline"
-                        >
-                          ¿Olvidaste tu contraseña?
-                        </a>
-                      </div>
-                      <Input
-                          id="password"
-                          type="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="mt-1"
-                          required
-                      />
-                    </div>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="email">Correo Electrónico</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="mt-1"
+                      required
+                      placeholder="usuario@dominio.com"
+                    />
                   </div>
 
-                  <Button
-                      type="submit"
-                      className="w-full"
-                      disabled={loading}
-                  >
-                    {loading ? (
-                        <span className="flex items-center gap-2">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password">Contraseña</Label>
+                      <a
+                        href="/forgot-password"
+                        className="text-sm text-primary hover:underline"
+                      >
+                        ¿Olvidaste tu contraseña?
+                      </a>
+                    </div>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="mt-1"
+                      required
+                      placeholder="••••••••"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="flex items-center gap-2">
                       <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
                       Iniciando sesión...
                     </span>
-                    ) : "Iniciar sesión"}
-                  </Button>
-                </form>
-              </CardContent>
+                  ) : "Iniciar sesión"}
+                </Button>
+              </form>
+            </CardContent>
 
-              <CardFooter className="flex flex-col space-y-2">
-                <div className="text-sm text-center text-muted-foreground">
-                  ¿No tienes una cuenta?{' '}
-                  <a href="/register" className="text-primary hover:underline transition-all">
-                    Registrarse
-                  </a>
-                </div>
-              </CardFooter>
-            </Card>
-          </motion.div>
-        </div>
-        <Footer />
-      </>
+            <CardFooter className="flex flex-col space-y-2">
+              <div className="text-sm text-center text-muted-foreground">
+                ¿No tienes una cuenta?{' '}
+                <a href="/register" className="text-primary hover:underline transition-all">
+                  Registrarse
+                </a>
+              </div>
+            </CardFooter>
+          </Card>
+        </motion.div>
+      </div>
+      <Footer />
+    </>
   );
 };
 
