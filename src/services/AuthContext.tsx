@@ -28,21 +28,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const login = async (email: string, password: string) => {
         try {
-            const response = await axios.post('/auth/login', {
-                email,
-                password
+            const response = await fetch('http://144.126.132.105:8080/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ email, password }),
             });
 
-            if (response.data[1] === 2) {
-                setUserType(response.data[0]);
-                localStorage.setItem('userType', response.data[0].toString());
-                navigate(getDashboardRoute(response.data[0]));
-            } else {
-                throw new Error('Credenciales inválidas');
+            const data = await response.json();
+
+            // Primero verificamos el código de estado del servidor
+            if (data[1] === 2) {  // Autenticación exitosa
+                setUserType(data[0]);
+                localStorage.setItem('userType', data[0].toString());
+                localStorage.setItem('userEmail', email);
+                return;
             }
+
+            // Manejo específico de errores según la respuesta del servidor
+            if (data[1] === 0 || data[0] === 0) {
+                throw new Error('Error en correo y/o contraseña');
+            }
+
+            throw new Error('Error desconocido durante la autenticación');
+
         } catch (error) {
             console.error('Error de autenticación:', error);
-            throw new Error('Error al iniciar sesión');
+            throw new Error(
+                error.message || 'Error al conectarse con el servidor. Intente nuevamente.'
+            );
         }
     };
 
