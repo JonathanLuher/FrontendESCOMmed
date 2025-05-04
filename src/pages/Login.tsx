@@ -21,20 +21,39 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // Usamos ruta relativa que será redirigida por el proxy de Vercel
+      // Opción 1: Usando proxy de Vercel (recomendado)
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({
           email: email,
           password: password
         }),
+        credentials: 'include'
       });
 
+      // Opción 2: Conexión directa (alternativa)
+      // const response = await fetch('http://144.126.132.105:8080/api/auth/login', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Accept': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     email: email,
+      //     password: password
+      //   }),
+      //   mode: 'cors',
+      //   credentials: 'include'
+      // });
+
       if (!response.ok) {
-        if (response.status === 401) {
+        const errorData = await response.json().catch(() => null);
+        
+        if (response.status === 401 || (errorData && errorData[1] === 0)) {
           toast.error('Error en correo y/o contraseña');
         } else {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -44,44 +63,24 @@ const Login = () => {
 
       const data = await response.json();
       
-      // data[0] = tipo de usuario
-      // data[1] = estado de autenticación
-      
       if (data[1] === 2) {
         toast.success('¡Login exitoso!');
-        // Guardar datos de usuario
         localStorage.setItem('userType', data[0].toString());
         localStorage.setItem('userEmail', email);
+        localStorage.setItem('authToken', data.token || ''); // Si tu API devuelve un token
         
-        // Redirigir según el tipo de usuario
         switch(data[0]) {
-          case 1: // Médico
-            navigate('/doctor-dashboard');
-            break;
-          case 2: // Paciente
-            navigate('/patient');
-            break;
-          case 3: // Investigador
-            navigate('/researcher-dashboard');
-            break;
-          default:
-            navigate('/');
+          case 1: navigate('/doctor-dashboard'); break;
+          case 2: navigate('/patient'); break;
+          case 3: navigate('/researcher-dashboard'); break;
+          default: navigate('/');
         }
       } else {
         toast.error('Error en correo y/o contraseña');
       }
-
     } catch (error) {
-      console.error('Error al hacer la petición:', error);
-      if (error instanceof TypeError) {
-        if (error.message.includes('Failed to fetch')) {
-          toast.error('Error al conectarse al servidor. Intente de nuevo más tarde.');
-        } else {
-          toast.error('Ocurrió un error inesperado. Intente de nuevo.');
-        }
-      } else {
-        toast.error('Error en el proceso de autenticación');
-      }
+      console.error('Error:', error);
+      toast.error('Error al conectarse al servidor. Intente de nuevo más tarde.');
     } finally {
       setLoading(false);
     }
