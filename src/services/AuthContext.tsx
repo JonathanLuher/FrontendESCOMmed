@@ -1,5 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+// Configura Axios globalmente
+axios.defaults.baseURL = '/api';
+axios.defaults.withCredentials = true;
 
 interface AuthContextType {
     userType: number | null;
@@ -22,20 +27,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     const login = async (email: string, password: string) => {
-        const response = await fetch('http://144.126.132.105:8080/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-        });
+        try {
+            const response = await axios.post('/auth/login', {
+                email,
+                password
+            });
 
-        if (!response.ok) throw new Error('Login failed');
+            if (response.data[1] === 2) {
+                setUserType(response.data[0]);
+                localStorage.setItem('userType', response.data[0].toString());
+                navigate(getDashboardRoute(response.data[0]));
+            } else {
+                throw new Error('Credenciales inválidas');
+            }
+        } catch (error) {
+            console.error('Error de autenticación:', error);
+            throw new Error('Error al iniciar sesión');
+        }
+    };
 
-        const data = await response.json();
-        if (data[1] === 2) {
-            setUserType(data[0]);
-            localStorage.setItem('userType', data[0].toString());
-        } else {
-            throw new Error('Invalid credentials');
+    const getDashboardRoute = (userType: number) => {
+        switch(userType) {
+            case 1: return '/doctor-dashboard';
+            case 2: return '/patient';
+            case 3: return '/researcher-dashboard';
+            default: return '/';
         }
     };
 
@@ -47,9 +63,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return (
         <AuthContext.Provider value={{ userType, login, logout, isAuthenticated: !!userType }}>
-    {children}
-    </AuthContext.Provider>
-);
+            {children}
+        </AuthContext.Provider>
+    );
 };
 
 export const useAuth = () => {
